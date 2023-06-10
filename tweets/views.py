@@ -7,6 +7,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+
 from users.tasks import send_mail_func
 from .serializers import TweetSerializer
 from .models import Tweet
@@ -39,6 +40,6 @@ class SendMailToAll(APIView):
         )
         title = "top retweeted tweet"
         message = top_retweeted_tweet.content
-        send_mail_func.delay()
+        send_mail_func.delay(title, message)
         response = {"detail": "Sent Email Successfully...Check your mail please"}
         return Response(response)
