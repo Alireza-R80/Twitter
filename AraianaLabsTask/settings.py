@@ -14,6 +14,9 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 import AraianaLabsTask.settings
+from elasticsearch import RequestsHttpConnection
+from elasticsearch_dsl.connections import connections
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -57,10 +60,37 @@ MIDDLEWARE = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     )
 }
+
+
+connections.create_connection(
+    hosts=['localhost'],
+    http_auth=('elastic', 'MvKLqq*szulkx6G3J2iL'),
+    scheme='https',
+    port=9200,
+    use_ssl=True,
+    verify_certs=False,
+)
+
+# ELASTICSEARCH_DSL = {
+#     'default': {
+#         'hosts': [{
+#             'host': "localhost",
+#             'port': 9200,
+#         }],
+#         'http_auth': ("elastic", "MvKLqq*szulkx6G3J2iL"),
+#         'use_ssl': True,
+#         'verify_certs': False,
+#         'connection_class': RequestsHttpConnection,
+#     },
+# }
+
 
 # Celery Configuration
 CELERY_BROKER_URL = "redis://localhost:6379"
