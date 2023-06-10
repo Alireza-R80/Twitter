@@ -1,7 +1,8 @@
 from celery import Celery
+import os
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'AraianaLabsTask.settings')
 app = Celery('AraianaLabsTask')
-
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
 app.autodiscover_tasks()
