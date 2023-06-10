@@ -12,6 +12,7 @@ from users.tasks import send_mail_func
 from .serializers import TweetSerializer
 from .models import Tweet
 from .utils import send_post_update_to_followers
+from . import elastic
 
 
 class TweetsView(viewsets.ModelViewSet):
@@ -20,10 +21,18 @@ class TweetsView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         user = self.request.user
-        serializer.save(user=user)
-        tweet =serializer.data
-        send_post_update_to_followers(user.followers.all(), tweet)
+        tweet = serializer.save(user=user)
+        elastic.create_tweet(tweet)
+        tweet_data =serializer.data
+        send_post_update_to_followers(user.followers.all(), tweet_data)
 
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        elastic.update_tweet(instance)
+
+    def perform_destroy(self, instance):
+        elastic.delete_tweet(instance)
+        return super().perform_destroy(instance)
 
 class FollowingTweets(ListAPIView):
     serializer_class = TweetSerializer
