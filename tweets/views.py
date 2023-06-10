@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from users.tasks import send_mail_func
 from .serializers import TweetSerializer
 from .models import Tweet
+from .utils import send_post_update_to_followers
 
 
 class TweetsView(viewsets.ModelViewSet):
@@ -17,7 +18,10 @@ class TweetsView(viewsets.ModelViewSet):
     queryset = Tweet.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        user = self.request.user
+        serializer.save(user=user)
+        tweet =serializer.data
+        send_post_update_to_followers(user.followers.all(), tweet)
 
 
 class FollowingTweets(ListAPIView):
@@ -30,10 +34,11 @@ class FollowingTweets(ListAPIView):
 
 class SendMailToAll(APIView):
     def post(self, request):
-        top_retweeted_tweet = Tweet.objects.annotate(n=Count('retweets')).order_by('-n').first()
-        title = 'top retweeted tweet'
+        top_retweeted_tweet = (
+            Tweet.objects.annotate(n=Count("retweets")).order_by("-n").first()
+        )
+        title = "top retweeted tweet"
         message = top_retweeted_tweet.content
         send_mail_func.delay()
-        response = {'detail': 'Sent Email Successfully...Check your mail please'}
+        response = {"detail": "Sent Email Successfully...Check your mail please"}
         return Response(response)
-
